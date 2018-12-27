@@ -1,0 +1,160 @@
+<html>
+<style type="text/css">
+    h1 {
+        font-size: 500%;
+    }
+
+    body {
+        background-color: #E6E6FA;
+    }
+
+    #status_span {
+        font-size: 200%;
+    }
+
+    #line {
+        font-weight: bold;
+        font-size: 500%;
+    }
+
+    #probe1 {
+        font-size: 150%;
+        color: red;
+    }
+
+    #probe2 {
+        font-size: 150%;
+        color: yellow;
+    }
+
+    #probe3 {
+        font-size: 150%;
+        color: green;
+    }
+
+    #probe4 {
+        font-size: 150%;
+        color: blue;
+    }
+
+    #battery {
+        color: black;
+    }
+
+    #update_secs1 {
+        font-size: 300%;
+    }
+
+    #update_secs2 {
+        font-size: 300%;
+    }
+
+    #update_secs3 {
+        font-size: 300%;
+    }
+
+    #update_secs4 {
+        font-size: 300%;
+    }
+
+    #update_secs_battery {
+        font-size: 300%;
+    }
+
+    #updatebad {
+        color: red;
+        font-size: 300%;
+    }
+</style>
+<script>
+    var context = new AudioContext();
+    var o;
+    var allow_alarm = true;
+    var alarm_on = false;
+
+    function alarm() {
+        if (alarm_on) return;
+        o = context.createOscillator();
+        o.type = "sine";
+        o.connect(context.destination);
+        o.start();
+        alarm_on = true;
+    }
+
+    function alarm_toggle() {
+        if (alarm_on) {
+            o.stop();
+            alarm_on = false;
+        }
+        let alarm_dom = document.getElementById('alarm');
+        if (allow_alarm) {
+            allow_alarm = false;
+            alarm_dom.innerHTML = "Enable Alarm";
+        } else {
+            allow_alarm = true;
+            alarm_dom.innerHTML = "Disable Alarm";
+        }
+    }
+
+    async function get_data() {
+        fetch('/data').then(function (response) {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error("Server Error: " + response.statusText + ", Code: " + response.status);
+        }).then(function (data) {
+            var probe1_dom = document.getElementById('probe1');
+            var probe2_dom = document.getElementById('probe2');
+            var probe3_dom = document.getElementById('probe3');
+            var probe4_dom = document.getElementById('probe4');
+            var battery_dom = document.getElementById('battery');
+            var update1_dom = document.getElementById('update_secs1');
+            var update2_dom = document.getElementById('update_secs2');
+            var update3_dom = document.getElementById('update_secs3');
+            var update4_dom = document.getElementById('update_secs4');
+            var update_bat_dom = document.getElementById('update_secs_battery');
+            probe1_dom.innerHTML = data.probe1 == 63536 ? "--" : data.probe1;
+            probe2_dom.innerHTML = data.probe2 == 63536 ? "--" : data.probe2;
+            probe3_dom.innerHTML = data.probe3 == 63536 ? "--" : data.probe3;
+            probe4_dom.innerHTML = data.probe4 == 63536 ? "--" : data.probe4;
+            update1_dom.innerHTML = data.probe1_update_secs > 30 ? "    (STALE" + ")" : "";
+            update1_dom.style.color = data.probe1_update_secs > 30 ? "red" : "black";
+            update2_dom.innerHTML = data.probe2_update_secs > 30 ? "    (STALE" + ")" : "";
+            update2_dom.style.color = data.probe2_update_secs > 30 ? "red" : "black";
+            update3_dom.innerHTML = data.probe3_update_secs > 30 ? "    (STALE" + ")" : "";
+            update3_dom.style.color = data.probe3_update_secs > 30 ? "red" : "black";
+            update4_dom.innerHTML = data.probe4_update_secs > 30 ? "    (STALE" + ")" : "";
+            update4_dom.style.color = data.probe4_update_secs > 30 ? "red" : "black";
+            update_bat_dom.innerHTML = data.battery_update_secs > 30 ? "    (STALE" + ")" : "";
+            update_bat_dom.style.color = data.battery_update_secs > 30 ? "red" : "black";
+            battery_dom.style.color = data.battery > 60 ? "green" : (data.battery > 20 ? "yellow" : "red");
+            battery_dom.innerHTML = data.battery+"%";
+            var status_dom = document.getElementById('status');
+            status_dom.innerHTML = "Updated " + new Date();
+            status_dom.style.color = "black";
+            status_dom.style.font_size = "200%";
+            //if (allow_alarm && data.probe1 > 60) alarm();
+        }).catch(function (error) {
+            console.log('There has been a problem with your fetch operation: ', error.message);
+            var status_dom = document.getElementById('status');
+            status_dom.innerHTML = "FAILED: " + error.message;
+            status_dom.style.color = "red";
+            status_dom.style.font_size = "400%";
+            if (allow_alarm) alarm();
+        });
+    }
+    get_data();
+    setInterval(get_data, 15000);
+</script>
+
+<body>
+    <div><span id="status_span">Status: <span id="status">Unknown</span></span></div>
+    <div><span id="line">Probe 1: <span id="probe1">--</span></span><span id="update_secs1"> ()</span></div>
+    <div><span id="line">Probe 2: <span id="probe2">--</span></span><span id="update_secs2"> ()</span></div>
+    <div><span id="line">Probe 3: <span id="probe3">--</span></span><span id="update_secs3"> ()</span></div>
+    <div><span id="line">Probe 4: <span id="probe4">--</span></span><span id="update_secs4"> ()</span></div>
+    <div><span id="line">Battery: <span id="battery">--%</span></span><span id="update_secs_battery"> ()</span></div>
+    <div><span id="line"><a href="#" id="alarm" onclick="alarm_toggle(); return false">Disable Alarm</a></span></div>
+</body>
+
+</html>

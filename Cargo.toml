@@ -1,0 +1,9 @@
+[package]
+name = "igrillmon"
+version = "0.1.0"
+authors = ["Steven Stanfield <stanfield@scarecrowtech.com>"]
+edition = "2018"
+
+[dependencies]
+rumqtt = { git = "https://github.com/AtherEnergy/rumqtt.git" }
+
