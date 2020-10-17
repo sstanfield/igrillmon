@@ -5,40 +5,58 @@
     }
 
     body {
-        background-color: #E6E6FA;
+        background-color: #002b36;
     }
 
     #status_span {
         font-size: 200%;
+        color: #839496;
+    }
+
+    #status {
+        font-size: 100%;
+        color: #839496;
     }
 
     #line {
         font-weight: bold;
         font-size: 500%;
+        color: #839496;
+    }
+
+    input[type="number"] {
+        background-color: #073642;
+        color: #839496;
+    }
+
+    #probe_input {
+        background-color: #002b36;
+        font-size: 200%;
+        color: #839496;
     }
 
     #probe1 {
         font-size: 150%;
-        color: red;
+        color: #eee8d5;
     }
 
     #probe2 {
         font-size: 150%;
-        color: yellow;
+        color: #eee8d5;
     }
 
     #probe3 {
         font-size: 150%;
-        color: green;
+        color: #eee8d5;
     }
 
     #probe4 {
         font-size: 150%;
-        color: blue;
+        color: #eee8d5;
     }
 
     #battery {
-        color: black;
+        color: #839496;
     }
 
     #update_secs1 {
@@ -62,15 +80,28 @@
     }
 
     #updatebad {
-        color: red;
+        color: #dc322f;
         font-size: 300%;
+    }
+
+    #alarm {
+        color: #268bd2;
     }
 </style>
 <script>
     var context = new AudioContext();
     var o;
-    var allow_alarm = true;
+    var allow_alarm = false;
     var alarm_on = false;
+    var probe1_min = 0;
+    var probe1_max = 250;
+    var probe2_min = 0;
+    var probe2_max = 250;
+    var probe3_min = 0;
+    var probe3_max = 250;
+    var probe4_min = 0;
+    var probe4_max = 250;
+    var last_update_secs = 120;
 
     function alarm() {
         if (alarm_on) return;
@@ -81,19 +112,64 @@
         alarm_on = true;
     }
 
+    function alarm_message() {
+        let alarm_dom = document.getElementById('alarm');
+        if (allow_alarm) {
+            alarm_dom.innerHTML = "Alarms are ON: click to disable";
+        } else {
+            alarm_dom.innerHTML = "Alarms are OFF: click to enable";
+        }
+    }
+
     function alarm_toggle() {
         if (alarm_on) {
             o.stop();
             alarm_on = false;
         }
-        let alarm_dom = document.getElementById('alarm');
         if (allow_alarm) {
             allow_alarm = false;
-            alarm_dom.innerHTML = "Enable Alarm";
         } else {
             allow_alarm = true;
-            alarm_dom.innerHTML = "Disable Alarm";
         }
+        alarm_message();
+    }
+
+    function mm_to_field() {
+        var probe1_min_dom = document.getElementById('probe1_min_in');
+        var probe1_max_dom = document.getElementById('probe1_max_in');
+        probe1_min_dom.value = probe1_min;
+        probe1_max_dom.value = probe1_max;
+        var probe2_min_dom = document.getElementById('probe2_min_in');
+        var probe2_max_dom = document.getElementById('probe2_max_in');
+        probe2_min_dom.value = probe2_min;
+        probe2_max_dom.value = probe2_max;
+        var probe3_min_dom = document.getElementById('probe3_min_in');
+        var probe3_max_dom = document.getElementById('probe3_max_in');
+        probe3_min_dom.value = probe3_min;
+        probe3_max_dom.value = probe3_max;
+        var probe4_min_dom = document.getElementById('probe4_min_in');
+        var probe4_max_dom = document.getElementById('probe4_max_in');
+        probe4_min_dom.value = probe4_min;
+        probe4_max_dom.value = probe4_max;
+    }
+
+    function field_to_mm() {
+        var probe1_min_dom = document.getElementById('probe1_min_in');
+        var probe1_max_dom = document.getElementById('probe1_max_in');
+        probe1_min = probe1_min_dom.value;
+        probe1_max = probe1_max_dom.value;
+        var probe2_min_dom = document.getElementById('probe2_min_in');
+        var probe2_max_dom = document.getElementById('probe2_max_in');
+        probe2_min = probe2_min_dom.value;
+        probe2_max = probe2_max_dom.value;
+        var probe3_min_dom = document.getElementById('probe3_min_in');
+        var probe3_max_dom = document.getElementById('probe3_max_in');
+        probe3_min = probe3_min_dom.value;
+        probe3_max = probe3_max_dom.value;
+        var probe4_min_dom = document.getElementById('probe4_min_in');
+        var probe4_max_dom = document.getElementById('probe4_max_in');
+        probe4_min = probe4_min_dom.value;
+        probe4_max = probe4_max_dom.value;
     }
 
     async function get_data() {
@@ -117,28 +193,35 @@
             probe2_dom.innerHTML = data.probe2 == 63536 ? "--" : data.probe2;
             probe3_dom.innerHTML = data.probe3 == 63536 ? "--" : data.probe3;
             probe4_dom.innerHTML = data.probe4 == 63536 ? "--" : data.probe4;
-            update1_dom.innerHTML = data.probe1_update_secs > 30 ? "    (STALE" + ")" : "";
-            update1_dom.style.color = data.probe1_update_secs > 30 ? "red" : "black";
-            update2_dom.innerHTML = data.probe2_update_secs > 30 ? "    (STALE" + ")" : "";
-            update2_dom.style.color = data.probe2_update_secs > 30 ? "red" : "black";
-            update3_dom.innerHTML = data.probe3_update_secs > 30 ? "    (STALE" + ")" : "";
-            update3_dom.style.color = data.probe3_update_secs > 30 ? "red" : "black";
-            update4_dom.innerHTML = data.probe4_update_secs > 30 ? "    (STALE" + ")" : "";
-            update4_dom.style.color = data.probe4_update_secs > 30 ? "red" : "black";
-            update_bat_dom.innerHTML = data.battery_update_secs > 30 ? "    (STALE" + ")" : "";
-            update_bat_dom.style.color = data.battery_update_secs > 30 ? "red" : "black";
-            battery_dom.style.color = data.battery > 60 ? "green" : (data.battery > 20 ? "yellow" : "red");
+            update1_dom.innerHTML = data.probe1_update_secs > 30 ? "    (STALE)" : "";
+            update1_dom.style.color = data.probe1_update_secs > 30 ? "#dc322f" : "#839496";
+            update2_dom.innerHTML = data.probe2_update_secs > 30 ? "    (STALE)" : "";
+            update2_dom.style.color = data.probe2_update_secs > 30 ? "#dc322f" : "#839496";
+            update3_dom.innerHTML = data.probe3_update_secs > 30 ? "    (STALE)" : "";
+            update3_dom.style.color = data.probe3_update_secs > 30 ? "#dc322f" : "#839496";
+            update4_dom.innerHTML = data.probe4_update_secs > 30 ? "    (STALE)" : "";
+            update4_dom.style.color = data.probe4_update_secs > 30 ? "#dc322f" : "#839496";
+            update_bat_dom.innerHTML = data.battery_update_secs > 30 ? "    (STALE)" : "";
+            update_bat_dom.style.color = data.battery_update_secs > 30 ? "#dc322f" : "#839496";
+            battery_dom.style.color = data.battery > 60 ? "#eee8d5" : (data.battery > 20 ? "#b58900" : "#dc322f");
             battery_dom.innerHTML = data.battery+"%";
             var status_dom = document.getElementById('status');
             status_dom.innerHTML = "Updated " + new Date();
-            status_dom.style.color = "black";
-            status_dom.style.font_size = "200%";
-            //if (allow_alarm && data.probe1 > 60) alarm();
+            field_to_mm();
+            if (allow_alarm && (data.probe1 < probe1_min || (data.probe1 > probe1_max && data.probe1 < 10000))) alarm();
+            if (allow_alarm && (data.probe2 < probe2_min || (data.probe2 > probe2_max && data.probe2 < 10000))) alarm();
+            if (allow_alarm && (data.probe3 < probe3_min || (data.probe3 > probe3_max && data.probe3 < 10000))) alarm();
+            if (allow_alarm && (data.probe4 < probe4_min || (data.probe4 > probe4_max && data.probe4 < 10000))) alarm();
+            if (allow_alarm && data.probe1_update_secs > last_update_secs) alarm();
+            if (allow_alarm && data.probe2_update_secs > last_update_secs) alarm();
+            if (allow_alarm && data.probe3_update_secs > last_update_secs) alarm();
+            if (allow_alarm && data.probe4_update_secs > last_update_secs) alarm();
+            if (allow_alarm && data.battery_update_secs > last_update_secs) alarm();
         }).catch(function (error) {
             console.log('There has been a problem with your fetch operation: ', error.message);
             var status_dom = document.getElementById('status');
             status_dom.innerHTML = "FAILED: " + error.message;
-            status_dom.style.color = "red";
+            status_dom.style.color = "#dc322f";
             status_dom.style.font_size = "400%";
             if (allow_alarm) alarm();
         });
@@ -149,12 +232,24 @@
 
 <body>
     <div><span id="status_span">Status: <span id="status">Unknown</span></span></div>
-    <div><span id="line">Probe 1: <span id="probe1">--</span></span><span id="update_secs1"> ()</span></div>
-    <div><span id="line">Probe 2: <span id="probe2">--</span></span><span id="update_secs2"> ()</span></div>
-    <div><span id="line">Probe 3: <span id="probe3">--</span></span><span id="update_secs3"> ()</span></div>
-    <div><span id="line">Probe 4: <span id="probe4">--</span></span><span id="update_secs4"> ()</span></div>
+    <div><span id="line">Probe 1: <span id="probe1">--</span></span><span id="update_secs1"> ()</span>
+         <span id="probe_input"><label>Min: </label><input type="number" id="probe1_min_in"></input></span>
+         <span id="probe_input"><label>Max: </label><input type="number" id="probe1_max_in"></input></span></div>
+    <div><span id="line">Probe 2: <span id="probe2">--</span></span><span id="update_secs2"> ()</span>
+         <span id="probe_input"><label>Min: </label><input type="number" id="probe2_min_in"></input></span>
+         <span id="probe_input"><label>Max: </label><input type="number" id="probe2_max_in"></input></span></div>
+    <div><span id="line">Probe 3: <span id="probe3">--</span></span><span id="update_secs3"> ()</span>
+         <span id="probe_input"><label>Min: </label><input type="number" id="probe3_min_in"></input></span>
+         <span id="probe_input"><label>Max: </label><input type="number" id="probe3_max_in"></input></span></div>
+    <div><span id="line">Probe 4: <span id="probe4">--</span></span><span id="update_secs4"> ()</span>
+         <span id="probe_input"><label>Min: </label><input type="number" id="probe4_min_in"></input></span>
+         <span id="probe_input"><label>Max: </label><input type="number" id="probe4_max_in"></input></span></div>
     <div><span id="line">Battery: <span id="battery">--%</span></span><span id="update_secs_battery"> ()</span></div>
-    <div><span id="line"><a href="#" id="alarm" onclick="alarm_toggle(); return false">Disable Alarm</a></span></div>
+    <div><span id="line"><a href="#" id="alarm" onclick="alarm_toggle(); return false"></a></span></div>
+<script>
+alarm_message();
+mm_to_field();
+</script>
 </body>
 
 </html>

@@ -24,7 +24,7 @@ struct BbqData {
 fn get_data(data: Arc<Mutex<BbqData>>) {
     let broker = "192.168.1.149";
     let port = 1883;
-    let mqtt_options = MqttOptions::new("test-pubsub1", broker, port).set_keep_alive(10);
+    let mqtt_options = MqttOptions::new("alarmpi-pubsub1", broker, port).set_keep_alive(10);
 
     let (mut mqtt_client, notifications) = MqttClient::start(mqtt_options).unwrap();
 
