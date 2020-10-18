@@ -25,13 +25,14 @@
     }
 
     input[type="number"] {
+        font-size: 100%;
         background-color: #073642;
         color: #839496;
     }
 
     #probe_input {
         background-color: #002b36;
-        font-size: 200%;
+        font-size: 300%;
         color: #839496;
     }
 
@@ -114,10 +115,13 @@
 
     function alarm_message() {
         let alarm_dom = document.getElementById('alarm');
+        var probe_input_dom = document.getElementById('probe_input');
         if (allow_alarm) {
             alarm_dom.innerHTML = "Alarms are ON: click to disable";
+            probe_input_dom.style.visibility = "visible";
         } else {
             alarm_dom.innerHTML = "Alarms are OFF: click to enable";
+            probe_input_dom.style.visibility = "hidden";
         }
     }
 
@@ -232,20 +236,22 @@
 
 <body>
     <div><span id="status_span">Status: <span id="status">Unknown</span></span></div>
-    <div><span id="line">Probe 1: <span id="probe1">--</span></span><span id="update_secs1"> ()</span>
-         <span id="probe_input"><label>Min: </label><input type="number" id="probe1_min_in"></input></span>
-         <span id="probe_input"><label>Max: </label><input type="number" id="probe1_max_in"></input></span></div>
-    <div><span id="line">Probe 2: <span id="probe2">--</span></span><span id="update_secs2"> ()</span>
-         <span id="probe_input"><label>Min: </label><input type="number" id="probe2_min_in"></input></span>
-         <span id="probe_input"><label>Max: </label><input type="number" id="probe2_max_in"></input></span></div>
-    <div><span id="line">Probe 3: <span id="probe3">--</span></span><span id="update_secs3"> ()</span>
-         <span id="probe_input"><label>Min: </label><input type="number" id="probe3_min_in"></input></span>
-         <span id="probe_input"><label>Max: </label><input type="number" id="probe3_max_in"></input></span></div>
-    <div><span id="line">Probe 4: <span id="probe4">--</span></span><span id="update_secs4"> ()</span>
-         <span id="probe_input"><label>Min: </label><input type="number" id="probe4_min_in"></input></span>
-         <span id="probe_input"><label>Max: </label><input type="number" id="probe4_max_in"></input></span></div>
+    <div><span id="line">Probe 1: <span id="probe1">--</span></span><span id="update_secs1"> ()</span></div>
+    <div><span id="line">Probe 2: <span id="probe2">--</span></span><span id="update_secs2"> ()</span></div>
+    <div><span id="line">Probe 3: <span id="probe3">--</span></span><span id="update_secs3"> ()</span></div>
+    <div><span id="line">Probe 4: <span id="probe4">--</span></span><span id="update_secs4"> ()</span></div>
     <div><span id="line">Battery: <span id="battery">--%</span></span><span id="update_secs_battery"> ()</span></div>
     <div><span id="line"><a href="#" id="alarm" onclick="alarm_toggle(); return false"></a></span></div>
+    <div id="probe_input">
+    <div><span"><label>Probe 1 Min: </label><input type="number" id="probe1_min_in"></input></span>
+         <span><label>Max: </label><input type="number" id="probe1_max_in"></input></span></div>
+    <div><span><label>Probe 2 Min: </label><input type="number" id="probe2_min_in"></input></span>
+         <span><label>Max: </label><input type="number" id="probe2_max_in"></input></span></div>
+    <div><span><label>Probe 3 Min: </label><input type="number" id="probe3_min_in"></input></span>
+         <span><label>Max: </label><input type="number" id="probe3_max_in"></input></span></div>
+    <div><span><label>Probe 4 Min: </label><input type="number" id="probe4_min_in"></input></span>
+         <span><label>Max: </label><input type="number" id="probe4_max_in"></input></span></div>
+    </div>
 <script>
 alarm_message();
 mm_to_field();
